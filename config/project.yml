@@ -1,0 +1,22 @@
+project:
+  name: retail-bank-analytics
+  timezone: Australia/Sydney
+  currency: CZK
+
+source:
+  dataset: berka_pkdd_1999
+  official_page: https://sorry.vse.cz/~berka/challenge/pkdd1999/berka.htm
+  archive_url: https://sorry.vse.cz/~berka/challenge/pkdd1999/data_berka.zip
+  expected_tables:
+    - account
+    - card
+    - client
+    - disp
+    - district
+    - loan
+    - order
+    - trans
+
+warehouse:
+  engine: duckdb
+  local_path: data/processed/retail_bank.duckdb
