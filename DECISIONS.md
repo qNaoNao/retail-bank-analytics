@@ -27,3 +27,11 @@
 ## ADR-005 — Make modelling optional and leakage-gated
 
 **Decision:** Complete the analytical product before adding a model. A baseline model is included only if an as-of date and origination-time feature set can be defended. Loan status, post-origination transactions, and future balances cannot be predictors.
+
+**2026-10-03 outcome:** Do not promote a predictive model in v1. Only 234 loans have finished outcomes and 31 defaulted. The project delivers the leakage-safe feature mart, a documented model gate, and descriptive risk analysis instead of an unstable headline score.
+
+## ADR-006 — Keep the supported dashboard demo local
+
+**Decision:** Ship the Streamlit application as a reproducible local demo and do not publish the row-level DuckDB database.
+
+**Reason:** The source is public research data, but no explicit modern redistribution licence was found. A public deployment can be reconsidered only with permission, a licensed replacement dataset, or approved aggregate extracts.

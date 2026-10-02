@@ -1,62 +1,154 @@
 # Retail Bank Customer 360
 
-**Growth, Engagement & Credit Risk Analytics with SQL, DuckDB, Python, and Streamlit**
+**Growth, Engagement & Credit Risk Analytics with SQL, DuckDB, Python and Streamlit**
 
-This portfolio project turns eight relational tables from the PKDD'99 Czech Financial Dataset (Berka dataset) into a reproducible retail-bank analytical layer and decision dashboard. The emphasis is on trustworthy metrics, SQL, data modelling, and business interpretation—not on wrapping an AI demo around a dataset.
+An end-to-end analytics portfolio project that turns eight relational tables from a real anonymized Czech bank into a governed customer 360, activity-cohort analysis, onboarding funnel, lending-risk view, and interactive decision dashboard.
 
-> Status: source acquisition and integrity audit complete; DuckDB staging is in progress. No analytical findings are claimed yet.
+The project is intentionally centred on analytical SQL, data modelling, metric definitions, reproducibility, and honest interpretation—not an AI wrapper.
 
-## Business questions
+## 30-second portfolio pitch
 
-1. Which customer and account groups show high value, stable balances, and sustained activity?
-2. How does account activity evolve by opening cohort, and where does engagement weaken?
-3. Which segments have low card or loan penetration and may merit further product analysis?
-4. Where is loan risk concentrated by customer, account, and district characteristics?
-5. Which recommended actions are supported by descriptive evidence, and which require an experiment or model?
+A retail bank has customers, accounts, permissions, transactions, cards, standing orders, loans, and district demographics in separate legacy tables. I built a reproducible DuckDB warehouse that preserves raw values, translates and types the source, prevents account/client double counting, and exposes tested business marts. A Streamlit dashboard then helps growth, customer, and risk teams explore portfolio composition, customer segments, account-opening cohorts, early product adoption, and pre-origination lending indicators.
 
-## Planned deliverables
+## What this demonstrates
 
-- Rebuildable ingestion and quality-check pipeline for eight source tables
-- DuckDB raw, staging, dimensional, and analytical layers
-- Tested SQL metric definitions and business-facing metric dictionary
-- Customer 360, value/behaviour segments, activity cohorts, product engagement, and loan-risk analysis
-- Filterable Streamlit/Plotly dashboard with drill-down and decision notes
-- Recruiter-friendly README, screenshots, architecture, demo script, and interview story
+- **SQL:** eight-table joins, CTEs, window functions, conditional aggregation, cohort grids, funnels, as-of feature windows, and reconciliation queries
+- **Data modelling:** raw/staging/mart layers, dimensions, facts, a client-account bridge, governed grains, and owner-only money attribution
+- **Python:** deterministic acquisition, SHA-256 validation, source profiling, DuckDB orchestration, generated reporting, testing, and Streamlit
+- **Business analytics:** customer value/activity segments, product penetration, cohort suitability, onboarding, portfolio risk, and actionable limitations
+- **Engineering:** Conda environment, Makefile entry points, 20 data assertions, pytest integration tests, linting, CI, and milestone Git history
 
-## Quick start
+## Verified portfolio results
+
+| Question | Evidence-backed result | Interpretation boundary |
+|---|---|---|
+| How large is the portfolio? | 4,500 owner accounts and 1,056,320 transactions | Historical 1990s Czech bank data |
+| How common are bank products? | Card penetration 19.8%; loan penetration 15.2%; 68.8% hold neither | A product gap is not automatic sales eligibility |
+| Does the data support churn analysis? | 12-month activity-retention proxy is 99.8% | Near-saturation plus no closure label means no defensible churn model |
+| What is the finished-loan problem rate? | 31 of 234 finished loans, or 13.25% | Running loans are excluded from final outcomes |
+| Which pre-loan signals differ? | Payment burden averaged 33.5% for defaulted vs 17.9% for repaid loans | Association only; 31 defaults and historical policy context |
+| Is negative balance relevant? | 25.8% of defaulted borrowers went negative before origination vs 0% of repaid borrowers | Requires back-testing on newer representative data |
+
+Full findings and recommendations are in [Analysis Findings](docs/ANALYSIS_FINDINGS.md).
+
+## Dashboard decision flow
+
+1. **Executive overview:** portfolio KPIs, active accounts, inflow/outflow, balances, product penetration, and finished-loan problem rate
+2. **Customer 360:** region/product/segment filters, transparent behaviour segments, balance/activity comparison, and account-level balance drill-down
+3. **Cohort & funnel:** opening-cohort balance trajectories, a conjunctive 12-month adoption funnel, and the deliberately labelled activity-retention proxy
+4. **Lending risk:** outcome mix, payment burden, regional rates with sample size, and pre-origination features only
+5. **Definitions:** metric rules and interpretation guardrails beside the charts
+
+## Architecture
+
+```mermaid
+flowchart LR
+    S[8 source tables] --> R[raw schema<br/>source fidelity]
+    R --> T[staging schema<br/>types + translations]
+    T --> C[core marts<br/>dimensions + facts + bridge]
+    C --> B[account month<br/>customer 360<br/>cohort + funnel<br/>loan risk]
+    B --> Q[20 data-quality assertions]
+    B --> D[Streamlit + Plotly dashboard]
+    B --> F[Generated findings + interview story]
+```
+
+See [Data Model](docs/DATA_MODEL.md) for grains, keys, and the double-counting policy.
+
+## Rebuild from a new machine
+
+Prerequisites: macOS/Linux, Conda, Git, and network access for the public source mirror.
 
 ```bash
+git clone <your-repository-url>
+cd retail-bank-analytics
 conda env create -f environment.yml
 conda activate retail-bank-analytics
-make check
-make test-pytest
-```
 
-The source data is intentionally excluded from Git. Before downloading it, read [Dataset evaluation](docs/DATASET_EVALUATION.md) and [Data use notice](docs/DATA_USE_NOTICE.md). Then run:
-
-```bash
 make download-data
+make audit-source
+make warehouse
+make analysis
+make verify
+make dashboard
 ```
+
+Open <http://localhost:8501> after the last command.
+
+The download command is an explicit acknowledgement that the source was publicly distributed for a research challenge but has no modern redistribution licence identified. Raw data remains local and Git-ignored.
+
+## Useful commands
+
+| Command | Purpose |
+|---|---|
+| `make check` | Dependency-free repository health check |
+| `make download-data` | Download eight pinned files and verify SHA-256 |
+| `make audit-source` | Validate row counts, headers, keys, missingness, and checksums |
+| `make warehouse` | Rebuild DuckDB and run all zero-row assertions |
+| `make analysis` | Regenerate findings from tested marts |
+| `make verify` | Run Ruff, pytest, and the project health check |
+| `make dashboard` | Start the local decision dashboard |
+
+## Trust and quality controls
+
+- Eight source checksums pinned to one mirror commit
+- Exact row-count and column contracts
+- Unique primary-key and foreign-key assertions
+- Accepted-value, date-range, signed-amount, and zero-amount rules
+- One account owner required per account
+- Unique account-month and customer-360 grains
+- Monotonic funnel and bounded cohort-rate checks
+- Loan feature window required to end before origination
+- Cash-flow reconciliation and finished-loan denominator tests
+- Automated Streamlit render test
+
+Current local verification: **20 data-quality assertions and 11 pytest tests pass**.
 
 ## Repository map
 
 ```text
-app/                 Streamlit application
-config/              Non-secret project configuration
-data/                 Local-only external/interim/processed data
-docs/                 Product spec, metrics, decisions, and portfolio story
-notebooks/            Focused exploration only; production logic lives in src/sql
-scripts/              Rebuild and validation entry points
-sql/                  Staging, marts, analysis, and SQL quality assertions
+app/                 Streamlit decision dashboard
+config/              Non-secret source and warehouse configuration
+data/                 Git-ignored raw, interim, and processed data
+docs/                 Findings, data model, metrics, decisions, and interview materials
+outputs/              Git-ignored local analytical outputs
+scripts/              Download, audit, warehouse, analysis, and validation entry points
+sql/staging/          Typed and translated source layer
+sql/marts/            Dimensions, facts, customer 360, cohort, funnel, and risk marts
+sql/analysis/         Business-facing dashboard views
 src/                  Reusable Python package
-tests/                Unit, data-contract, and metric tests
+tests/                Foundation, warehouse, metric, leakage, and dashboard tests
 ```
 
-## Important interpretation limits
+## Data source and responsible use
 
-- “Retention” means **continued account activity**, not confirmed customer retention; there is no closure or churn label.
-- Cross-sell views identify groups for investigation, not causal uplift or sales eligibility.
-- Loan status is an outcome. Any optional risk model must use only information available at loan origination.
-- The data is historical (1990s Czech banking) and is useful for analytical-method demonstration, not present-day market sizing.
+The project uses the Financial Data Set from the PKDD'99 Discovery Challenge, prepared by Petr Berka and Marta Sochorova from anonymized Czech bank data.
 
-See [PROJECT_SPEC.md](PROJECT_SPEC.md), [ROADMAP.md](ROADMAP.md), and [STATUS.md](STATUS.md) for the agreed scope and progress.
+- Current academic entry: <https://relational.fel.cvut.cz/dataset/Financial>
+- Pinned acquisition mirror: <https://github.com/jlacko/berka-dataset>, commit `77e9972...`
+- Raw archive and all databases are excluded from Git
+- Every downloaded source file is checked before use
+
+Read [Data Use Notice](docs/DATA_USE_NOTICE.md) and [Dataset Evaluation](docs/DATASET_EVALUATION.md) for the licensing caveat and alternatives.
+
+## Deliberate limitations
+
+- “Retention” is continued customer-operation activity, not confirmed customer retention.
+- Net cash flow is not bank profit or customer income.
+- Product-penetration differences do not establish treatment uplift.
+- Full-lifetime segments are not allowed in origination-time risk features.
+- Regional and segment rates can be unstable when loan counts are small.
+- No model was promoted in v1: only 31 finished-loan defaults are available, and the strongest portfolio value is governed analytics rather than an unstable accuracy headline.
+
+## Portfolio materials
+
+- [Project specification](PROJECT_SPEC.md)
+- [Nine-day roadmap](ROADMAP.md)
+- [Decision log](DECISIONS.md)
+- [Metric dictionary](docs/METRIC_DICTIONARY.md)
+- [Source audit](docs/SOURCE_AUDIT.md)
+- [Data-quality report](docs/DATA_QUALITY_REPORT.md)
+- [Analysis findings](docs/ANALYSIS_FINDINGS.md)
+- [Dashboard QA record](docs/DASHBOARD_QA.md)
+- [Dashboard demo script](docs/DEMO_SCRIPT.md)
+- [Interview guide](docs/INTERVIEW_GUIDE.md)
+- [Deployment plan](docs/DEPLOYMENT.md)

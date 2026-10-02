@@ -44,14 +44,27 @@ Verification:
 - Passed 20 executable zero-row quality assertions and five warehouse integration tests.
 - Investigated and documented 14 valid zero-amount interest/penalty-interest records.
 
-## Current milestone
+### Milestone 4 — Business analysis and dashboard
 
-**Milestone 4 — Business analysis and dashboard**
+- Generated evidence-backed portfolio, customer, product, cohort, funnel, and lending-risk findings.
+- Built a five-tab Streamlit/Plotly dashboard with global filters and account drill-down.
+- Reconciled displayed KPIs to governed SQL definitions and warehouse tests.
+- Added a Streamlit render smoke test and visually checked all dashboard tabs.
+- Confirmed the browser console has no application errors.
+- Documented the model no-go decision: 31 finished-loan defaults are insufficient for a defensible promoted model.
 
-1. Generate evidence-backed portfolio, segment, cohort, funnel, and risk findings.
-2. Build the filterable Streamlit/Plotly dashboard and account drill-down.
-3. Add screenshots and a local demo runbook.
-4. Reconcile every displayed KPI to the metric dictionary and SQL tests.
+### Milestone 5 — Portfolio packaging
+
+- Replaced the starter README with the portfolio pitch, verified results, architecture, rebuild guide, and responsible-use notes.
+- Added a three-minute demo script, interview guide, résumé bullets, deployment decision, and CI workflow.
+- Preserved milestone commits instead of rewriting the learning history.
+- Completed a clean end-to-end rebuild from local source: 1,079,680 rows audited, 20 data-quality assertions passed, Ruff passed, 11 pytest tests passed, and the repository health check passed.
+
+## Current state
+
+**Version 1 is complete and ready for a local portfolio demo.**
+
+The dashboard is intentionally local because raw and transformed row-level data are excluded from Git. The next external step is optional: create a GitHub repository and upload the code-only history after the owner chooses an account and repository visibility.
 
 ## Known risks
 
