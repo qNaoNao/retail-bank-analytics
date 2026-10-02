@@ -21,5 +21,6 @@ Total source rows: **1,079,680**
 
 - Row counts, headers, primary-key uniqueness, and pinned-file checksums match the contract.
 - Missing cells are expected in optional transaction counterparty fields and selected district rates.
+- Fourteen zero-amount rows are retained because they are rounded interest or penalty-interest records; negative amounts are not present.
 - This audit validates source integrity only; foreign keys, accepted codes, dates, and business rules are tested in the DuckDB staging pipeline.
 - Raw source files remain excluded from Git.

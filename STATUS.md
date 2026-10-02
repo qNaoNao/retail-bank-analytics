@@ -34,15 +34,24 @@ Verification:
 - Kept all raw files and generated audit JSON outside Git.
 - Added CTU Relational as the current academic repository reference.
 
+### Milestone 3 — DuckDB staging and quality controls
+
+- Built 38 raw, staging, mart, and analytics tables/views from version-controlled SQL.
+- Preserved original codes while adding typed dates, amounts, directions, and English labels.
+- Added dimensions, facts, the account-client bridge, account-month, customer 360, cohort, onboarding, and loan-risk marts.
+- Enforced owner-only money attribution to prevent authorized-user double counting.
+- Added origination-time loan features whose transaction window ends before the loan date.
+- Passed 20 executable zero-row quality assertions and five warehouse integration tests.
+- Investigated and documented 14 valid zero-amount interest/penalty-interest records.
+
 ## Current milestone
 
-**Milestone 3 — DuckDB staging and quality controls**
+**Milestone 4 — Business analysis and dashboard**
 
-1. Load raw tables into DuckDB with source values preserved.
-2. Cast keys, amounts, dates, and timestamps in a staging layer.
-3. Translate Czech categorical codes without losing raw values.
-4. Validate foreign keys, accepted values, date ranges, and row-count reconciliation.
-5. Build the first dimensional and monthly-account marts.
+1. Generate evidence-backed portfolio, segment, cohort, funnel, and risk findings.
+2. Build the filterable Streamlit/Plotly dashboard and account drill-down.
+3. Add screenshots and a local demo runbook.
+4. Reconcile every displayed KPI to the metric dictionary and SQL tests.
 
 ## Known risks
 

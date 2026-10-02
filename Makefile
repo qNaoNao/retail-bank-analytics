@@ -1,7 +1,7 @@
 PYTHON ?= python3
 ENV_NAME := retail-bank-analytics
 
-.PHONY: help env env-update check test test-pytest download-data audit-source
+.PHONY: help env env-update check test test-pytest download-data audit-source warehouse dashboard verify
 
 help:
 	@echo "make env           Create the Conda environment"
@@ -11,6 +11,9 @@ help:
 	@echo "make test-pytest   Run the full pytest suite inside the environment"
 	@echo "make download-data Download Berka data after acknowledging the license caveat"
 	@echo "make audit-source  Audit source rows, headers, keys, missingness, and checksums"
+	@echo "make warehouse     Rebuild DuckDB and run all data-quality assertions"
+	@echo "make dashboard     Run the local Streamlit dashboard"
+	@echo "make verify        Run lint, tests, and the project health check"
 
 env:
 	conda env create -f environment.yml
@@ -32,3 +35,14 @@ download-data:
 
 audit-source:
 	python scripts/audit_source.py
+
+warehouse:
+	python scripts/build_warehouse.py
+
+dashboard:
+	streamlit run app/Home.py
+
+verify:
+	ruff check src scripts tests app
+	pytest
+	python scripts/check_setup.py
