@@ -1,6 +1,6 @@
 # Metric Dictionary — Starter Version
 
-These are governed draft definitions. SQL implementation and validation status will be added in Milestone 4.
+These are governed definitions implemented in version-controlled SQL and validated by the warehouse quality suite.
 
 | Metric | Grain / definition | Important guardrail |
 |---|---|---|
@@ -16,6 +16,10 @@ These are governed draft definitions. SQL implementation and validation status w
 | Mature-loan problem rate | Finished problematic loans divided by finished loans | Exclude still-running loans from a final-outcome rate |
 | Amount-weighted problem share | Original amount of finished problematic loans divided by amount of finished loans | Exposure proxy, not realized loss |
 | Balance volatility | Within-account standard deviation or coefficient of variation over monthly ending balances | Treat zero/near-zero means explicitly |
+| Payment burden | Scheduled monthly loan payment divided by average monthly inflow observed before origination | Null when no valid pre-loan inflow; descriptive, not a policy threshold |
+| Funnel activation | Eligible account has a customer-operated transaction within 30 days of opening | Full 12-month observation window required |
+| Funnel engagement | Activated account has activity in at least three distinct months in its first six months | Strict subset of activation |
+| Funnel product adoption | Engaged account receives a card or loan within 12 months of opening | Product holding is not eligibility or causal conversion |
 
 ## Segment design principles
 

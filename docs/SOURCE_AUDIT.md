@@ -1,6 +1,6 @@
 # Source Data Audit
 
-Generated: 2026-10-02T21:36:09.923574+00:00
+Generated: 2026-10-02T22:01:20.124236+00:00
 
 Overall status: **PASS**
 
@@ -21,6 +21,5 @@ Total source rows: **1,079,680**
 
 - Row counts, headers, primary-key uniqueness, and pinned-file checksums match the contract.
 - Missing cells are expected in optional transaction counterparty fields and selected district rates.
-- Fourteen zero-amount rows are retained because they are rounded interest or penalty-interest records; negative amounts are not present.
 - This audit validates source integrity only; foreign keys, accepted codes, dates, and business rules are tested in the DuckDB staging pipeline.
 - Raw source files remain excluded from Git.
