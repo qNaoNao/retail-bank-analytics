@@ -3,6 +3,5 @@
 
 from retail_bank_analytics.healthcheck import main
 
-
 if __name__ == "__main__":
     raise SystemExit(main())

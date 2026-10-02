@@ -1,7 +1,7 @@
 PYTHON ?= python3
 ENV_NAME := retail-bank-analytics
 
-.PHONY: help env env-update check test test-pytest download-data
+.PHONY: help env env-update check test test-pytest download-data audit-source
 
 help:
 	@echo "make env           Create the Conda environment"
@@ -10,6 +10,7 @@ help:
 	@echo "make test          Run dependency-free unit tests"
 	@echo "make test-pytest   Run the full pytest suite inside the environment"
 	@echo "make download-data Download Berka data after acknowledging the license caveat"
+	@echo "make audit-source  Audit source rows, headers, keys, missingness, and checksums"
 
 env:
 	conda env create -f environment.yml
@@ -28,3 +29,6 @@ test-pytest:
 
 download-data:
 	python scripts/download_data.py --acknowledge-license-caveat
+
+audit-source:
+	python scripts/audit_source.py

@@ -7,6 +7,9 @@ source:
   dataset: berka_pkdd_1999
   official_page: https://sorry.vse.cz/~berka/challenge/pkdd1999/berka.htm
   archive_url: https://sorry.vse.cz/~berka/challenge/pkdd1999/data_berka.zip
+  current_repository_page: https://relational.fel.cvut.cz/dataset/Financial
+  pinned_mirror: https://github.com/jlacko/berka-dataset
+  pinned_mirror_commit: 77e9972a1ead107e5f42a91dd989d587bff055a4
   expected_tables:
     - account
     - card

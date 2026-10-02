@@ -4,7 +4,7 @@
 
 This portfolio project turns eight relational tables from the PKDD'99 Czech Financial Dataset (Berka dataset) into a reproducible retail-bank analytical layer and decision dashboard. The emphasis is on trustworthy metrics, SQL, data modelling, and business interpretation—not on wrapping an AI demo around a dataset.
 
-> Status: project foundation complete; data ingestion is the next milestone. No analytical findings are claimed yet.
+> Status: source acquisition and integrity audit complete; DuckDB staging is in progress. No analytical findings are claimed yet.
 
 ## Business questions
 

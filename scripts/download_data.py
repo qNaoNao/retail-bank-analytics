@@ -6,7 +6,11 @@ from __future__ import annotations
 import argparse
 import json
 
-from retail_bank_analytics.data_source import OFFICIAL_ARCHIVE_URL, download_and_extract
+from retail_bank_analytics.data_source import (
+    OFFICIAL_ARCHIVE_URL,
+    download_and_extract,
+    download_mirror_files,
+)
 from retail_bank_analytics.paths import PROJECT_ROOT
 
 
@@ -15,6 +19,12 @@ def parse_args() -> argparse.Namespace:
         description="Download and validate the PKDD'99 Berka archive outside Git."
     )
     parser.add_argument("--url", default=OFFICIAL_ARCHIVE_URL, help="Source archive URL")
+    parser.add_argument(
+        "--source",
+        choices=("pinned-mirror", "official-archive"),
+        default="pinned-mirror",
+        help="Acquisition method; the pinned mirror is the reliable default",
+    )
     parser.add_argument(
         "--acknowledge-license-caveat",
         action="store_true",
@@ -33,7 +43,10 @@ def main() -> int:
         return 2
 
     target = PROJECT_ROOT / "data" / "external" / "berka"
-    report = download_and_extract(args.url, target)
+    if args.source == "pinned-mirror":
+        report = download_mirror_files(target)
+    else:
+        report = download_and_extract(args.url, target)
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
 

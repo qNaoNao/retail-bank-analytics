@@ -8,7 +8,6 @@ import platform
 from retail_bank_analytics import __version__
 from retail_bank_analytics.paths import PROJECT_ROOT, missing_directories
 
-
 REQUIRED_FILES = (
     ".gitignore",
     "environment.yml",

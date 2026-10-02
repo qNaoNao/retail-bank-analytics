@@ -8,6 +8,12 @@ Source page: <https://sorry.vse.cz/~berka/challenge/pkdd1999/berka.htm>
 
 Source archive: <https://sorry.vse.cz/~berka/challenge/pkdd1999/data_berka.zip>
 
+Current academic repository page: <https://relational.fel.cvut.cz/dataset/Financial>
+
+Pinned acquisition mirror: <https://github.com/jlacko/berka-dataset> at commit
+`77e9972a1ead107e5f42a91dd989d587bff055a4`. Every downloaded table is verified
+against a repository-maintained SHA-256 checksum before use.
+
 ## License caveat
 
 The dataset was publicly distributed for the discovery challenge, but this project has not found an explicit modern license that grants redistribution. Public availability is not treated as equivalent to an open-data license.
