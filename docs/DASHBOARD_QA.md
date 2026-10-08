@@ -11,7 +11,7 @@ Date: 2026-10-03 (Australia/Sydney)
 
 ## Visual checks
 
-The local application was opened at `http://127.0.0.1:8501` and checked in the Codex in-app browser.
+The local application was opened at `http://127.0.0.1:8501` and checked in a local browser.
 
 | View | Result | Checks performed |
 |---|---|---|
@@ -25,4 +25,4 @@ Browser console errors: none observed.
 
 ## Responsive observation
 
-The dashboard remains usable in the narrow in-app browser: KPI cards stack vertically, the tab row scrolls, and charts resize to the available width. The default sidebar starts collapsed to protect chart space; users can expand it to change filters.
+The dashboard remains usable in a narrow browser viewport: KPI cards stack vertically, the tab row scrolls, and charts resize to the available width. The default sidebar starts collapsed to protect chart space; users can expand it to change filters.
