@@ -68,8 +68,10 @@ ZERO_ROW_ASSERTIONS = {
         "SELECT account_id, month_start FROM mart.account_month GROUP BY 1,2 HAVING COUNT(*) > 1"
     ),
     "customer_360_wrong_grain": (
-        "SELECT 1 WHERE (SELECT COUNT(*) FROM mart.customer_360) <> 4500 OR "
-        "(SELECT COUNT(DISTINCT account_id) FROM mart.customer_360) <> 4500"
+        "SELECT 1 WHERE (SELECT COUNT(*) FROM mart.customer_360) <> "
+        "(SELECT COUNT(*) FROM mart.dim_account) OR "
+        "(SELECT COUNT(DISTINCT account_id) FROM mart.customer_360) <> "
+        "(SELECT COUNT(*) FROM mart.dim_account)"
     ),
     "cohort_rate_out_of_range": (
         "SELECT * FROM mart.cohort_activity_retention WHERE activity_retention_rate NOT BETWEEN 0 AND 1"
@@ -82,7 +84,62 @@ ZERO_ROW_ASSERTIONS = {
     "preloan_feature_leakage": (
         "SELECT loan_id FROM mart.loan_risk_features WHERE feature_window_end >= loan_date"
     ),
+    "lifecycle_unique_grain": (
+        "SELECT account_id, month_start FROM mart.account_month_lifecycle "
+        "GROUP BY 1,2 HAVING COUNT(*) <> 1"
+    ),
+    "growth_bridge_reconciles": (
+        "SELECT month_start FROM analytics.monthly_growth WHERE "
+        "active_accounts <> new_active_accounts + retained_accounts + reactivated_accounts OR "
+        "previous_active_accounts <> retained_accounts + newly_inactive_accounts OR "
+        "net_active_change <> new_active_accounts + reactivated_accounts - newly_inactive_accounts"
+    ),
+    "growth_matches_observed_activity": (
+        "SELECT g.month_start FROM analytics.monthly_growth g "
+        "LEFT JOIN mart.monthly_portfolio p USING(month_start) "
+        "WHERE g.active_accounts <> coalesce(p.active_accounts, 0)"
+    ),
+    "partial_month_excluded": (
+        "SELECT l.account_id FROM mart.account_month_lifecycle l "
+        "CROSS JOIN analytics.observation_window o WHERE l.month_start > o.last_complete_month"
+    ),
+    "landmark_unique_grain": (
+        "SELECT account_id FROM mart.card_adoption_landmark GROUP BY account_id HAVING COUNT(*) <> 1"
+    ),
+    "landmark_feature_leakage": (
+        "SELECT account_id FROM mart.card_adoption_landmark "
+        "WHERE feature_last_transaction_date >= landmark_date"
+    ),
+    "immature_outcome_is_null": (
+        "SELECT account_id FROM mart.card_adoption_landmark "
+        "WHERE NOT outcome_observable AND card_adopted_next180d IS NOT NULL"
+    ),
+    "landmark_outcome_window": (
+        "SELECT account_id FROM mart.card_adoption_landmark "
+        "WHERE card_adopted_next180d AND (first_card_date < landmark_date "
+        "OR first_card_date >= outcome_end_exclusive)"
+    ),
 }
+
+# Source-specific counts stay mandatory for Berka but are not applied to synthetic fixtures.
+BERKA_ONLY_CHECKS = {
+    "raw_account_row_count",
+    "raw_transaction_row_count",
+    "known_zero_transaction_count",
+}
+
+
+def check_connection(
+    connection: duckdb.DuckDBPyConnection, *, synthetic: bool = False
+) -> dict[str, dict[str, object]]:
+    """Run reusable assertions against a caller-owned connection without writing reports."""
+    checks = {}
+    for name, query in ZERO_ROW_ASSERTIONS.items():
+        if synthetic and name in BERKA_ONLY_CHECKS:
+            continue
+        failures = connection.execute(f"SELECT COUNT(*) FROM ({query}) assertion").fetchone()[0]
+        checks[name] = {"failures": failures, "status": "pass" if failures == 0 else "fail"}
+    return checks
 
 
 def run_quality_checks(database_path: Path) -> dict[str, object]:
@@ -91,9 +148,7 @@ def run_quality_checks(database_path: Path) -> dict[str, object]:
     connection = duckdb.connect(str(database_path), read_only=True)
     checks: dict[str, dict[str, object]] = {}
     try:
-        for name, query in ZERO_ROW_ASSERTIONS.items():
-            failures = connection.execute(f"SELECT COUNT(*) FROM ({query}) assertion").fetchone()[0]
-            checks[name] = {"failures": failures, "status": "pass" if failures == 0 else "fail"}
+        checks = check_connection(connection)
     finally:
         connection.close()
 

@@ -35,3 +35,21 @@
 **Decision:** Ship the Streamlit application as a reproducible local demo and do not publish the row-level DuckDB database.
 
 **Reason:** The source is public research data, but no explicit modern redistribution licence was found. A public deployment can be reconsidered only with permission, a licensed replacement dataset, or approved aggregate extracts.
+
+## ADR-007 — Use independent synthetic sources for review and CI
+
+**Decision (2026-10-19):** Generate a small, deterministic eight-table source without copying historical rows. Run the same SQL layers and portable assertions, label the application mode, and reject synthetic input in the historical memo generator. Historical row-count/checksum contracts remain separate and mandatory for a historical rebuild.
+
+**Reason:** A reviewer should be able to execute meaningful checks from a source-only clone. Generated data and database files remain untracked; generation code and tests are included.
+
+## ADR-008 — Decompose growth and use a day-180 adoption landmark
+
+**Decision:** Report new, retained, reactivated and newly inactive account-months on a complete-month spine. For prospective card analysis, use features in [opening, day 180) and an issuance outcome in [day 180, day 360), with full follow-up and no card before the landmark. Missing future labels are NULL.
+
+**Reason:** All historical accounts meet the existing 30-day activation definition. The earliest historical card issuance occurs on day 203. A 30/90-day issuance endpoint or a churn model would not match this source. Raw group comparisons and common-opening-year standardized rates remain observational.
+
+## ADR-009 — Validate before replacing a warehouse
+
+**Decision:** Build historical and demo warehouses in unique staging directories, validate, close the connection and atomically replace the published file. Preserve the previous warehouse on build failure. Include database path and file modification version in dashboard cache keys; use account ID to break ties in segment quartiles.
+
+**Reason:** A failed refresh should not remove the last usable demo, and rebuilds should not silently return stale metrics or unstable tied segment assignments.

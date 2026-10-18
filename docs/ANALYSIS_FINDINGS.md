@@ -13,11 +13,11 @@ All amounts are historical Czech koruna (CZK). Findings are descriptive associat
 
 | Behaviour segment | Customers | Avg. month-end balance | Card penetration | Loan penetration | Loan customers |
 |---|---:|---:|---:|---:|---:|
-| `core` | 2,526 | 31,758 | 16.7% | 13.9% | 350 |
-| `high_activity_mass` | 733 | 30,157 | 9.7% | 16.9% | 124 |
+| `core` | 2,525 | 31,746 | 16.7% | 13.8% | 349 |
+| `high_activity_mass` | 732 | 30,173 | 9.7% | 16.9% | 124 |
 | `high_value_low_engagement` | 427 | 53,063 | 51.1% | 19.4% | 83 |
-| `low_activity_low_balance` | 422 | 17,058 | 0.0% | 2.6% | 11 |
-| `high_value_engaged` | 392 | 54,464 | 46.2% | 29.1% | 114 |
+| `low_activity_low_balance` | 423 | 17,060 | 0.0% | 2.6% | 11 |
+| `high_value_engaged` | 393 | 54,482 | 46.3% | 29.3% | 115 |
 
 - **3,096 accounts (68.8%)** have neither a card nor loan; 722 are card-only, 512 are loan-only, and 170 hold both.
 - Among accounts with a full 12-month observation window, **464 of 4,500 (10.3%)** reached the conjunctive funnel stage of early activation, sustained six-month engagement, and card-or-loan adoption within 12 months.

@@ -7,7 +7,7 @@
 | Digital Banking | Customer 360, engagement, product penetration, portfolio and credit-risk context |
 | FinTech Analytics | Reproducible local warehouse, data contracts, leakage-aware optional model |
 | Data Product | User/business questions, governed definitions, dashboard workflow, acceptance criteria |
-| Internet Data Roles | Segmentation, cohorts, funnel-like product adoption, experimentation-ready recommendations |
+| Internet Data Roles | Monthly lifecycle bridge, disjoint feature/outcome windows, cohort mix checks, Wilson intervals, power / MDE / duration planning, and source-free reproducibility |
 
 ## Resume project name
 

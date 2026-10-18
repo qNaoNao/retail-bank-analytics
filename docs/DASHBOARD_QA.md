@@ -1,6 +1,25 @@
 # Dashboard QA Record
 
-Date: 2026-10-03 (Australia/Sydney)
+## Version 0.2 — 2026-10-19 (Asia/Shanghai)
+
+| Verification | Result |
+|---|---|
+| Historical source-to-warehouse rebuild | Pass; 28 executable assertions |
+| Full local Python 3.11 test suite | 34 passed |
+| Source-only snapshot, no historical files or database | 28 passed; six historical-only tests explicitly skipped |
+| Ruff and whitespace/diff validation | Pass |
+| Independent synthetic demo | 240 accounts, eight raw tables, all SQL layers, 25 portable assertions |
+| Historical versus synthetic application mode | Explicit source selection, banner and separate databases verified |
+| Growth month bridge | December 1998: 4,478 + 0 + 2 − 56 = 4,424 |
+| Experiment control | Changing MDE from 2 pp to 1 pp recalculates total 3,712 → 13,428 and displays insufficient-pool warning |
+| Offline HTML report | Charts, memo and tables render in a local browser; Plotly library embedded |
+| Remote CI / public deployment | Not run this round; changes were not pushed |
+
+New tests include an absent activity month, return after a gap, incomplete final month, exact day-180/day-360 boundaries, immature outcome NULLs, Wilson endpoint rates, infeasible experiment size, opening-year composition reversal, failed-build preservation, empty sidebar filters and rejection of synthetic input to a historical report.
+
+Visual review used a local browser. The growth chart titles/labels remain readable in a narrow viewport; KPI cards stack and the tab strip scrolls. The independent preview uses port 8599 to avoid the user's other projects. Screenshots are in `docs/images/`.
+
+## Original version — 2026-10-03 (Australia/Sydney)
 
 ## Automated checks
 

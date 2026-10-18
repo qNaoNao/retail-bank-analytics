@@ -1,7 +1,7 @@
 PYTHON ?= python3
 ENV_NAME := retail-bank-analytics
 
-.PHONY: help env env-update check test test-pytest download-data audit-source warehouse analysis dashboard verify rebuild
+.PHONY: help env env-update check test test-pytest download-data audit-source warehouse analysis growth-report demo dashboard verify rebuild
 
 help:
 	@echo "make env           Create the Conda environment"
@@ -13,6 +13,8 @@ help:
 	@echo "make audit-source  Audit source rows, headers, keys, missingness, and checksums"
 	@echo "make warehouse     Rebuild DuckDB and run all data-quality assertions"
 	@echo "make analysis      Regenerate evidence-backed findings"
+	@echo "make growth-report Regenerate growth memo and offline HTML report"
+	@echo "make demo          Build an independent synthetic demo (no downloads)"
 	@echo "make dashboard     Run the local Streamlit dashboard"
 	@echo "make verify        Run lint, tests, and the project health check"
 	@echo "make rebuild       Rebuild data, warehouse, reports, and verification"
@@ -27,7 +29,7 @@ check:
 	PYTHONPATH=src $(PYTHON) scripts/check_setup.py
 
 test:
-	PYTHONPATH=src $(PYTHON) -m unittest discover -s tests -v
+	PYTHONPATH=src $(PYTHON) -m unittest discover -s tests -p test_foundation.py -v
 
 test-pytest:
 	pytest
@@ -43,6 +45,13 @@ warehouse:
 
 analysis:
 	python scripts/generate_analysis.py
+	python scripts/generate_growth_report.py
+
+growth-report:
+	python scripts/generate_growth_report.py
+
+demo:
+	python scripts/build_demo.py
 
 dashboard:
 	streamlit run app/Home.py

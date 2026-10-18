@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import duckdb
 
@@ -30,6 +31,7 @@ SQL_LAYERS = (
     "sql/marts/050_cohort.sql",
     "sql/marts/060_loan_risk.sql",
     "sql/analysis/070_portfolio_views.sql",
+    "sql/marts/080_growth.sql",
 )
 
 
@@ -81,30 +83,41 @@ def execute_sql_layers(connection: duckdb.DuckDBPyConnection) -> list[str]:
 
 
 def build_warehouse(database_path: Path, rebuild: bool = True) -> dict[str, object]:
-    """Build all warehouse layers and return reproducibility metadata."""
+    """Build and validate in isolation, then atomically publish the completed database.
+
+    The optional ``rebuild`` argument is retained for existing callers. All builds are
+    full replacements because every SQL layer is versioned as CREATE OR REPLACE.
+    """
 
     source_dir = find_source_dir()
     database_path.parent.mkdir(parents=True, exist_ok=True)
-    if rebuild and database_path.exists():
-        database_path.unlink()
+    with TemporaryDirectory(prefix=".warehouse-", dir=database_path.parent) as directory:
+        staged = Path(directory) / "warehouse.duckdb"
+        with duckdb.connect(str(staged)) as connection:
+            connection.execute("SET threads = 4")
+            load_raw_tables(connection, source_dir)
+            executed = execute_sql_layers(connection)
+            connection.execute(
+                "CREATE OR REPLACE TABLE analytics.dataset_metadata AS "
+                "SELECT 'historical' AS dataset_kind, 'Historical Berka / PKDD99' AS label"
+            )
+            from retail_bank_analytics.quality import check_connection
 
-    connection = duckdb.connect(str(database_path))
-    try:
-        connection.execute("SET threads = 4")
-        load_raw_tables(connection, source_dir)
-        executed = execute_sql_layers(connection)
-        connection.execute("CHECKPOINT")
-        schemas = connection.execute(
-            """
-            SELECT table_schema, COUNT(*) AS table_count
-            FROM information_schema.tables
-            WHERE table_schema IN ('raw', 'staging', 'mart', 'analytics')
-            GROUP BY table_schema
-            ORDER BY table_schema
-            """
-        ).fetchall()
-    finally:
-        connection.close()
+            checks = check_connection(connection)
+            failed = [name for name, result in checks.items() if result["status"] != "pass"]
+            if failed:
+                raise ValueError(f"Warehouse not published; quality checks failed: {failed}")
+            connection.execute("CHECKPOINT")
+            schemas = connection.execute(
+                """
+                SELECT table_schema, COUNT(*) AS table_count
+                FROM information_schema.tables
+                WHERE table_schema IN ('raw', 'staging', 'mart', 'analytics')
+                GROUP BY table_schema
+                ORDER BY table_schema
+                """
+            ).fetchall()
+        staged.replace(database_path)
 
     report = {
         "built_at_utc": datetime.now(UTC).isoformat(),

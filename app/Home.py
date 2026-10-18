@@ -2,15 +2,22 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from retail_bank_analytics.demo import build_demo
+from retail_bank_analytics.experiments import wilson_interval
+from retail_bank_analytics.growth_dashboard import render_growth
 from retail_bank_analytics.paths import PROJECT_ROOT
 
-DATABASE = PROJECT_ROOT / "data" / "processed" / "retail_bank.duckdb"
+HISTORICAL_DATABASE = PROJECT_ROOT / "data/processed/retail_bank.duckdb"
+DEMO_DATABASE = PROJECT_ROOT / "data/processed/demo.duckdb"
 NAVY = "#17324D"
 BLUE = "#2F6BFF"
 TEAL = "#16A39A"
@@ -38,12 +45,17 @@ st.markdown(
 
 
 @st.cache_data(show_spinner=False)
-def query(sql: str) -> pd.DataFrame:
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+def cached_query(sql: str, database_path: str, modified_ns: int) -> pd.DataFrame:
+    connection = duckdb.connect(database_path, read_only=True)
     try:
         return connection.execute(sql).fetchdf()
     finally:
         connection.close()
+
+
+def query(sql: str) -> pd.DataFrame:
+    # The cache changes after rebuilding or switching the data source.
+    return cached_query(sql, str(DATABASE), DATABASE.stat().st_mtime_ns)
 
 
 def percent(value: float) -> str:
@@ -54,9 +66,28 @@ def money(value: float) -> str:
     return f"CZK {value:,.0f}"
 
 
+override = os.environ.get("RETAIL_BANK_DATABASE")
+if override:
+    DATABASE = Path(override)
+else:
+    mode = st.sidebar.radio(
+        "Data source",
+        ["Historical Berka", "Synthetic demo"],
+        index=0 if HISTORICAL_DATABASE.exists() else 1,
+    )
+    DATABASE = HISTORICAL_DATABASE if mode == "Historical Berka" else DEMO_DATABASE
+    if mode == "Synthetic demo" and not DATABASE.exists():
+        with st.spinner("Preparing an independent synthetic demo…"):
+            build_demo(DATABASE)
 if not DATABASE.exists():
-    st.error("The local analytical database is missing. Run `make warehouse` first.")
+    st.error("Historical warehouse missing. Choose Synthetic demo or run `make warehouse`.")
     st.stop()
+
+dataset_kind = query("SELECT dataset_kind FROM analytics.dataset_metadata").iloc[0, 0]
+if dataset_kind == "synthetic":
+    st.warning(
+        "Synthetic demo — generated examples only. These figures are not historical findings or evidence of business impact."
+    )
 
 customers = query("SELECT * FROM mart.customer_360")
 monthly = query("SELECT * FROM mart.monthly_portfolio ORDER BY month_start")
@@ -89,21 +120,45 @@ elif product_filter == "Neither":
     filtered = filtered[(filtered["card_count"] == 0) & (filtered["loan_count"] == 0)]
 
 st.sidebar.caption(f"{len(filtered):,} of {len(customers):,} owner accounts selected")
+st.sidebar.caption(
+    "Filters affect Customer 360 and Lending risk. Other pages state their own scope."
+)
 
 st.title("Retail Bank Customer 360")
-st.caption("Growth, engagement and credit-risk analytics · PKDD'99 Czech Financial Dataset")
+st.caption(
+    "Growth, engagement and credit-risk analytics · "
+    + (
+        "independent synthetic demo"
+        if dataset_kind == "synthetic"
+        else "PKDD'99 Czech Financial Dataset"
+    )
+)
 st.markdown(
-    '<div class="context-note"><b>Decision lens:</b> All amounts are historical CZK. '
-    "Results are descriptive; filters do not imply product eligibility or causal uplift.</div>",
+    '<div class="context-note"><b>Decision lens:</b> '
+    + (
+        "Amounts are illustrative synthetic CZK. "
+        if dataset_kind == "synthetic"
+        else "All amounts are historical CZK. "
+    )
+    + "Results are descriptive; filters do not imply product eligibility or causal uplift.</div>",
     unsafe_allow_html=True,
 )
 
-overview_tab, customer_tab, engagement_tab, risk_tab, definitions_tab = st.tabs(
-    ["Executive overview", "Customer 360", "Cohort & funnel", "Lending risk", "Definitions"]
+overview_tab, customer_tab, engagement_tab, growth_tab, risk_tab, definitions_tab = st.tabs(
+    [
+        "Executive overview",
+        "Customer 360",
+        "Cohort & funnel",
+        "Growth & experiments",
+        "Lending risk",
+        "Definitions",
+    ]
 )
 
 with overview_tab:
     st.subheader("Portfolio at a glance")
+    as_of = query("SELECT as_of_date FROM analytics.observation_window").iloc[0, 0]
+    st.caption(f"Scope: whole portfolio · source observation ends {as_of:%Y-%m-%d}")
     columns = st.columns(5)
     columns[0].metric("Customers", f"{int(kpis.customers):,}")
     columns[1].metric("Transactions", f"{int(kpis.transactions):,}")
@@ -265,7 +320,7 @@ with engagement_tab:
         title="Customer-operation activity retention proxy",
         labels={"months_since_open": "Months since opening", "retention_rate": "Active share"},
     )
-    retention_chart.update_yaxes(tickformat=".0%", range=[0.9, 1.005])
+    retention_chart.update_yaxes(tickformat=".0%", range=[0, 1.005])
     retention_chart.update_traces(line_color=TEAL, line_width=3)
     st.plotly_chart(retention_chart, width="stretch")
     st.warning(
@@ -273,11 +328,13 @@ with engagement_tab:
         "evidence of true customer retention because closures and churn labels are absent."
     )
 
+with growth_tab:
+    render_growth(query, synthetic=dataset_kind == "synthetic")
+
 with risk_tab:
     st.subheader("Loan outcomes and pre-origination indicators")
     loans = query("SELECT * FROM mart.loan_risk_features")
-    if not filtered.empty:
-        loans = loans[loans["account_id"].isin(set(filtered["account_id"]))]
+    loans = loans[loans["account_id"].isin(set(filtered["account_id"]))]
 
     risk_cols = st.columns(4)
     mature = loans[loans["is_mature"]]
@@ -287,7 +344,14 @@ with risk_tab:
         "Finished-loan problem rate",
         percent(mature["is_problem"].mean()) if len(mature) else "n/a",
     )
-    risk_cols[3].metric("Running delinquent", f"{(loans['loan_status']=='running_delinquent').sum():,}")
+    risk_cols[3].metric(
+        "Running delinquent", f"{(loans['loan_status'] == 'running_delinquent').sum():,}"
+    )
+    if len(mature):
+        lower, upper = wilson_interval(int(mature.is_problem.sum()), len(mature))
+        st.caption(
+            f"Finished-loan problem rate · 95% Wilson interval: {lower:.2%}–{upper:.2%}. Historical, selected population; interval does not correct selection bias."
+        )
 
     left, right = st.columns(2)
     with left:

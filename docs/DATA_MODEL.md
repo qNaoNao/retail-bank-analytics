@@ -61,6 +61,13 @@ flowchart LR
 | `cohort_activity_retention` | One opening cohort-relative month | Customer-operation activity proxy, not confirmed retention |
 | `onboarding_funnel` | One conjunctive stage | Every later stage is a strict subset of the prior stage |
 | `loan_risk_features` | One loan | Transaction features end strictly before loan origination |
+| `account_month_lifecycle` | One opened account × complete calendar month | Dense spine retains absent transaction months; lifecycle history uses prior rows only |
+| `analytics.monthly_growth` | One complete calendar month | Both active-level and change identities reconcile |
+| `card_adoption_landmark` | One account | Feature end exclusive = opened+180d, outcome end exclusive = opened+360d; immature outcome NULL |
+| `analytics.card_adoption_segments` | One pre-180 behavior segment | Only card-free and fully observed candidates; explicit count denominator |
+| `analytics.card_adoption_by_cohort` | Opening year × pre-180 segment | Composition check before interpreting the blended difference |
+| `analytics.observation_window` | One source snapshot | Source-derived as-of date and last complete month |
+| `analytics.dataset_metadata` | One warehouse | Historical or synthetic; synthetic findings cannot overwrite the historical decision memo |
 
 ## Code translation policy
 

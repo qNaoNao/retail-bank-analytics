@@ -1,10 +1,26 @@
 # Retail Bank Customer 360
 
-**Growth, Engagement & Credit Risk Analytics with SQL, DuckDB, Python and Streamlit**
+**Customer analytics, growth diagnostics and experiment planning · SQL · DuckDB · Python · Streamlit**
 
-An end-to-end analytics portfolio project that turns eight relational tables from a real anonymized Czech bank into a governed customer 360, activity-cohort analysis, onboarding funnel, lending-risk view, and interactive decision dashboard.
+An analytics portfolio project that turns eight relational tables from an anonymized Czech bank into a governed customer 360, cohort/funnel analysis, monthly growth bridge, lending-risk view and a prospective card-offer experiment plan.
 
-The project is intentionally centred on analytical SQL, data modelling, metric definitions, reproducibility, and honest interpretation—not an AI wrapper.
+The core decision: **where is there room to improve product adoption, and would a properly measured experiment be feasible?** The source contains no campaign assignment or revenue outcome, so the project distinguishes measured behavior from proposed impact.
+
+## Run the demo in two minutes
+
+Python 3.11 or 3.12:
+
+```bash
+git clone https://github.com/qNaoNao/retail-bank-analytics.git
+cd retail-bank-analytics
+python -m pip install -e ".[dev]"
+python scripts/build_demo.py
+python -m streamlit run app/Home.py
+```
+
+On a source-only clone, the dashboard selects **Synthetic demo**. Its 240 independently generated accounts exercise all eight source tables and the full SQL pipeline without downloading or redistributing historical records. The banner distinguishes synthetic figures from the historical findings below. Use the historical rebuild instructions later in this README to reproduce those findings.
+
+Start with [the growth decision memo](docs/GROWTH_DECISION_MEMO.md), [reference review](docs/REFERENCE_REVIEW.md) and [three-minute demo](docs/DEMO_SCRIPT.md).
 
 ## 30-second portfolio pitch
 
@@ -15,8 +31,8 @@ A retail bank has customers, accounts, permissions, transactions, cards, standin
 - **SQL:** eight-table joins, CTEs, window functions, conditional aggregation, cohort grids, funnels, as-of feature windows, and reconciliation queries
 - **Data modelling:** raw/staging/mart layers, dimensions, facts, a client-account bridge, governed grains, and owner-only money attribution
 - **Python:** deterministic acquisition, SHA-256 validation, source profiling, DuckDB orchestration, generated reporting, testing, and Streamlit
-- **Business analytics:** customer value/activity segments, product penetration, cohort suitability, onboarding, portfolio risk, and actionable limitations
-- **Engineering:** Conda environment, Makefile entry points, 20 data assertions, pytest integration tests, linting, CI, and milestone Git history
+- **Business analytics:** monthly lifecycle decomposition, time-separated product adoption, cohort composition checks, Wilson intervals, experiment power and duration planning
+- **Engineering:** source contracts, 28 data assertions, synthetic full-pipeline integration tests, application interaction tests, linting, and Python 3.11/3.12 CI configuration
 
 ## Verified portfolio results
 
@@ -28,6 +44,9 @@ A retail bank has customers, accounts, permissions, transactions, cards, standin
 | What is the finished-loan problem rate? | 31 of 234 finished loans, or 13.25% | Running loans are excluded from final outcomes |
 | Which pre-loan signals differ? | Payment burden averaged 33.5% for defaulted vs 17.9% for repaid loans | Association only; 31 defaults and historical policy context |
 | Is negative balance relevant? | 25.8% of defaulted borrowers went negative before origination vs 0% of repaid borrowers | Requires back-testing on newer representative data |
+| Where did the latest active-account change come from? | December 1998: 4,478 prior + 0 first active + 2 reactivated − 56 newly inactive = 4,424 | Monthly inactivity is not account closure |
+| Is a future card-offer endpoint measurable? | 179/4,500 first-card issuances in days [180,360): 3.98%, Wilson 95% CI 3.44%–4.59% | Candidates were card-free at day 180; observational baseline, no offer effect |
+| Would a 1 pp experiment fit this sample? | About 13,428 total accounts required at 80% power / two-sided 5% α | Exceeds the historical pool; current eligible traffic is unknown |
 
 Full findings and recommendations are in [Analysis Findings](docs/ANALYSIS_FINDINGS.md).
 
@@ -36,8 +55,15 @@ Full findings and recommendations are in [Analysis Findings](docs/ANALYSIS_FINDI
 1. **Executive overview:** portfolio KPIs, active accounts, inflow/outflow, balances, product penetration, and finished-loan problem rate
 2. **Customer 360:** region/product/segment filters, transparent behaviour segments, balance/activity comparison, and account-level balance drill-down
 3. **Cohort & funnel:** opening-cohort balance trajectories, a conjunctive 12-month adoption funnel, and the deliberately labelled activity-retention proxy
-4. **Lending risk:** outcome mix, payment burden, regional rates with sample size, and pre-origination features only
-5. **Definitions:** metric rules and interpretation guardrails beside the charts
+4. **Growth & experiments:** reconciled monthly activity bridge, day-180 card-adoption landmark, uncertainty / opening-year splits, and adjustable sample-size / duration planning
+5. **Lending risk:** outcome mix, payment burden, regional rates with sample size, Wilson uncertainty, and pre-origination features only
+6. **Definitions:** metric rules and interpretation guardrails beside the charts
+
+Sidebar region / lifetime-segment / gender / product filters affect Customer 360 and Lending risk. Portfolio and cohort pages use the whole portfolio. The growth page has its own opening-year filter to avoid conditioning its analysis on future product holdings.
+
+Actual local application preview (historical mode; see [QA record](docs/DASHBOARD_QA.md)):
+
+![Growth diagnostics and monthly active-account reconciliation](docs/images/growth-desktop.jpg)
 
 ## Architecture
 
@@ -47,9 +73,13 @@ flowchart LR
     R --> T[staging schema<br/>types + translations]
     T --> C[core marts<br/>dimensions + facts + bridge]
     C --> B[account month<br/>customer 360<br/>cohort + funnel<br/>loan risk]
-    B --> Q[20 data-quality assertions]
+    B --> G[Complete-month lifecycle<br/>day-180 product landmark]
+    B --> Q[28 data-quality assertions]
+    G --> Q
+    G --> E[Experiment planning<br/>Wilson intervals + power]
     B --> D[Streamlit + Plotly dashboard]
-    B --> F[Generated findings + interview story]
+    B --> F[Generated findings + offline HTML report]
+    E --> F
 ```
 
 See [Data Model](docs/DATA_MODEL.md) for grains, keys, and the double-counting policy.
@@ -59,7 +89,7 @@ See [Data Model](docs/DATA_MODEL.md) for grains, keys, and the double-counting p
 Prerequisites: macOS/Linux, Conda, Git, and network access for the public source mirror.
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/qNaoNao/retail-bank-analytics.git
 cd retail-bank-analytics
 conda env create -f environment.yml
 conda activate retail-bank-analytics
@@ -85,6 +115,8 @@ The download command is an explicit acknowledgement that the source was publicly
 | `make audit-source` | Validate row counts, headers, keys, missingness, and checksums |
 | `make warehouse` | Rebuild DuckDB and run all zero-row assertions |
 | `make analysis` | Regenerate findings from tested marts |
+| `make growth-report` | Regenerate decision memo, CSV/JSON evidence and offline HTML report |
+| `make demo` | Build independent synthetic data through all SQL layers, no download |
 | `make verify` | Run Ruff, pytest, and the project health check |
 | `make dashboard` | Start the local decision dashboard |
 
@@ -100,8 +132,12 @@ The download command is an explicit acknowledgement that the source was publicly
 - Loan feature window required to end before origination
 - Cash-flow reconciliation and finished-loan denominator tests
 - Automated Streamlit render test
+- Complete-month activity bridge reconciles to the underlying activity table
+- Missing account-months remain in the lifecycle spine; partial last month is excluded
+- Landmark features stop before day 180; censored future labels remain NULL
+- Independent synthetic full-pipeline and application tests run even without historical data
 
-Current local verification: **20 data-quality assertions and 11 pytest tests pass**.
+Verification details and source-only versus historical checks are recorded in [Dashboard QA](docs/DASHBOARD_QA.md). CI runs fixture-based SQL/application tests without fetching the historical dataset; historical-only checks remain explicitly separate.
 
 ## Repository map
 
@@ -138,10 +174,14 @@ Read [Data Use Notice](docs/DATA_USE_NOTICE.md) and [Dataset Evaluation](docs/DA
 - Full-lifetime segments are not allowed in origination-time risk features.
 - Regional and segment rates can be unstable when loan counts are small.
 - No model was promoted in v1: only 31 finished-loan defaults are available, and the strongest portfolio value is governed analytics rather than an unstable accuracy headline.
+- A 180-day card-issuance endpoint may require a long experiment. Traffic, consent, costs and guardrail events are absent; the planner exposes these missing inputs rather than claiming measured uplift or ROI.
 
 ## Portfolio materials
 
 - [Project specification](PROJECT_SPEC.md)
+- [Reference review and implemented improvements](docs/REFERENCE_REVIEW.md)
+- [Growth decision memo](docs/GROWTH_DECISION_MEMO.md)
+- [GitHub Desktop upload steps (Chinese)](docs/GITHUB_DESKTOP_GUIDE.zh-CN.md)
 - [Nine-day roadmap](ROADMAP.md)
 - [Decision log](DECISIONS.md)
 - [Metric dictionary](docs/METRIC_DICTIONARY.md)

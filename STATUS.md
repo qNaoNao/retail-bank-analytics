@@ -1,6 +1,20 @@
 # Project Status
 
-Last updated: 2026-10-03 (Australia/Sydney)
+Last updated: 2026-10-19 (Asia/Shanghai)
+
+## Version 0.2 — Growth analysis and reproducible review
+
+- Reviewed the Jaffle Shop model/test pattern, an independently runnable customer-analytics dashboard architecture, and lifecycle / observation-window practices in a game analytics portfolio. Exact references and adaptations: `docs/REFERENCE_REVIEW.md`.
+- Added a complete-month account spine and a reconciled new / retained / reactivated / newly inactive growth bridge.
+- Added a day-180 card-free landmark, strictly prior feature windows and mature-only day-[180,360) issuance outcomes.
+- Added Wilson intervals, opening-year composition standardization, fixed-horizon sample-size / duration planning, a prospective experiment protocol and an offline HTML report.
+- Added a deterministic synthetic eight-table demo using the same transformation pipeline. No source data is downloaded for demo or CI.
+- Fixed empty-selection risk filtering, stale query caching and nondeterministic quartile ties. Historical rebuilds validate before replacing the prior database.
+- Historical warehouse: 28 quality assertions pass. Local Python 3.11 full suite: 34 tests pass. Source-only checks run the synthetic pipeline / app and explicitly skip historical-only checks.
+- Configured CI for Python 3.11/3.12 with maintained Node 24 actions and an explicit Ubuntu 24.04 runner. Remote CI has not run for these changes because nothing was pushed this round.
+- Refreshed README, metrics, model grains, interview/demo materials and a Chinese GitHub Desktop upload guide.
+
+The code upgrade is local and uncommitted. No GitHub upload, public deployment or historical rewrite was performed in this round. The earlier browser-note cleanup commit may still be ahead of origin.
 
 ## Completed milestones
 
@@ -62,9 +76,9 @@ Verification:
 
 ## Current state
 
-**Version 1 is complete and ready for a local portfolio demo.**
+**Version 0.2 is ready for a local analytics portfolio demo.**
 
-The dashboard is intentionally local because raw and transformed row-level data are excluded from Git. The next external step is optional: create a GitHub repository and upload the code-only history after the owner chooses an account and repository visibility.
+The historical dashboard remains local because raw and transformed row-level data are excluded from Git. A code-only GitHub repository already exists; this round's upgrades have not been uploaded. A new reviewer can run the independent synthetic demo without obtaining the historical source.
 
 ## Known risks
 

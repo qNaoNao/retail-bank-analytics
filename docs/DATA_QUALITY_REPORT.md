@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-10-02T22:01:22.685621+00:00
+Generated: 2026-10-18T16:53:59.404573+00:00
 
 Overall status: **PASS**
 
@@ -26,5 +26,13 @@ Overall status: **PASS**
 | `cohort_rate_out_of_range` | 0 | pass |
 | `onboarding_funnel_not_monotonic` | 0 | pass |
 | `preloan_feature_leakage` | 0 | pass |
+| `lifecycle_unique_grain` | 0 | pass |
+| `growth_bridge_reconciles` | 0 | pass |
+| `growth_matches_observed_activity` | 0 | pass |
+| `partial_month_excluded` | 0 | pass |
+| `landmark_unique_grain` | 0 | pass |
+| `landmark_feature_leakage` | 0 | pass |
+| `immature_outcome_is_null` | 0 | pass |
+| `landmark_outcome_window` | 0 | pass |
 
 All assertions are designed as zero-row checks: any returned row is a reproducible failure, not a warning hidden in a notebook.

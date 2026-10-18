@@ -37,8 +37,8 @@ WITH transaction_metrics AS (
         a.*,
         t.* EXCLUDE (account_id),
         p.* EXCLUDE (account_id),
-        ntile(4) OVER (ORDER BY t.average_month_end_balance NULLS FIRST) AS balance_quartile,
-        ntile(4) OVER (ORDER BY t.lifetime_customer_transaction_count NULLS FIRST)
+        ntile(4) OVER (ORDER BY t.average_month_end_balance NULLS FIRST, a.account_id) AS balance_quartile,
+        ntile(4) OVER (ORDER BY t.lifetime_customer_transaction_count NULLS FIRST, a.account_id)
             AS activity_quartile
     FROM mart.dim_account a
     LEFT JOIN transaction_metrics t USING (account_id)
